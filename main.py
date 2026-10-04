@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query,Form
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -65,7 +65,7 @@ def query_cricket(question: str, k: int = 3):
             "source": doc.metadata.get("source", "Unknown"),
             "page": doc.metadata.get("page", "Unknown")
         })
-    
+    print(response)
     return response
 
 # -----------------------------
@@ -81,10 +81,10 @@ async def root():
 async def health():
     return {"status": "healthy"}
 
-@app.get("/query")
-async def ask_question(q: str = Query(..., description="Your cricket question")):
+@app.post("/query")
+async def ask_question(q: str = Form(..., description="Your cricket question")):
     """
     Ask any question about Cricket Rules
-    Example: /query?q=What is the length of the pitch?
+    Send as form-data with key: q
     """
     return query_cricket(q)
