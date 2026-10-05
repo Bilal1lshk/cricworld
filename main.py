@@ -9,9 +9,7 @@ from langchain_chroma import Chroma
 KB_DIR = Path(__file__).resolve().parent / "knowledgebase"
 CHROMA_DIR = Path(__file__).resolve().parent / "chroma_db"
 
-# -----------------------------
-# 1. Load & Prepare Data (only first time)
-# -----------------------------
+
 documents = PyPDFLoader(str(KB_DIR / "Cricket-Rules.pdf")).load()
 
 text_splitter = RecursiveCharacterTextSplitter(
@@ -20,16 +18,11 @@ text_splitter = RecursiveCharacterTextSplitter(
 )
 chunks = text_splitter.split_documents(documents)
 
-# -----------------------------
-# 2. Embeddings
-# -----------------------------
+
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
 
-# -----------------------------
-# 3. Create or Load Chroma DB
-# -----------------------------
 if CHROMA_DIR.exists():
     # Load existing database
     vectorstore = Chroma(
@@ -38,7 +31,6 @@ if CHROMA_DIR.exists():
     )
     print("Loaded existing Chroma DB")
 else:
-    # Create new database
     vectorstore = Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
@@ -46,9 +38,7 @@ else:
     )
     print("Created new Chroma DB and stored chunks")
 
-# -----------------------------
-# 4. Query Function
-# -----------------------------
+
 def query_cricket(question: str, k: int = 3):
     """Search relevant chunks for a question"""
     results = vectorstore.similarity_search(question, k=k)
@@ -68,9 +58,7 @@ def query_cricket(question: str, k: int = 3):
     print(response)
     return response
 
-# -----------------------------
-# 5. FastAPI App
-# -----------------------------
+
 app = FastAPI(title="Cricket RAG API")
 
 @app.get("/")
